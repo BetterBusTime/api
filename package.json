@@ -1,18 +1,19 @@
 {
-  "name": "betterbustimeapi",
-  "version": "0.1.0",
-  "description": "The backend API to Better Bus Time",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Fahim Ali",
-  "license": "MIT",
-  "dependencies": {
-    "axios": "^0.21.1",
-    "express": "^4.17.1"
-  },
-  "devDependencies": {
-    "dotenv": "^8.2.0"
-  }
+    "name": "betterbustimeapi",
+    "version": "0.1.0",
+    "description": "The backend API to Better Bus Time",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Fahim Ali",
+    "license": "MIT",
+    "dependencies": {
+        "axios": "^0.21.1",
+        "express": "^4.17.1"
+    },
+    "devDependencies": {
+        "dotenv": "^8.2.0"
+    }
 }
