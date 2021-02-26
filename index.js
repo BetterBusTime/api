@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const routes = require("./controllers/routes");
+const stops = require("./controllers/stops");
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use((req, res, next) => {
 });
 
 app.use("/routes", routes);
+app.use("/stops", stops);
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => console.log(`listening on ${port}`));
