@@ -7,7 +7,12 @@ const app = express();
 
 // TODO only allow the BBT front end
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
+    res.header(
+        "Access-Control-Allow-Origin",
+        process.env.NODE_ENV === "production"
+            ? "http://localhost:3000"
+            : "http://localhost:3000"
+    );
     next();
 });
 

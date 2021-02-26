@@ -1,22 +1,33 @@
-const BASE = "http://bustime.mta.info/api/where";
+class APIHelper {
+    static AND = "&";
+    static JSON = ".json?";
+    static BASE = "http://bustime.mta.info/api/where";
 
-const ROUTES = "/routes-for-agency";
-const MTABC = "/MTABC.json?";
-const MTANYCT = "/MTA%20NYCT.json?";
+    static ROUTES = "/routes-for-agency/";
+    static MTABC = "MTABC" + this.JSON;
+    static MTANYCT = "MTA%20NYCT" + this.JSON;
 
-const STOPS = "/stops-for-route";
+    static STOPS = "/stops-for-route/";
 
-const KEY = `key=${process.env.MTA_API_KEY}`;
-const PL = "includePolylines=false";
-const VER = "version=2";
+    static KEY = `key=${process.env.MTA_API_KEY}`;
+    static PL = "includePolylines=false";
+    static VER = "version=2";
 
-const AND = "&";
+    static routesURL = agency =>
+        this.BASE + this.ROUTES + agency + this.KEY + this.AND + this.VER;
+    static bcRoutesURL = () => this.routesURL(this.MTABC);
+    static nyctRoutesURL = () => this.routesURL(this.MTANYCT);
 
-const routesURL = agency => BASE + ROUTES + agency + KEY + AND + VER;
-const bcRoutesURL = () => routesURL(MTABC);
-const nyctRoutesURL = () => routesURL(MTANYCT);
+    static routeURL = route =>
+        this.BASE +
+        this.STOPS +
+        route +
+        this.JSON +
+        this.KEY +
+        this.AND +
+        this.PL +
+        this.AND +
+        this.VER;
+}
 
-module.exports = {
-    bcRoutesURL,
-    nyctRoutesURL
-};
+module.exports = APIHelper;
