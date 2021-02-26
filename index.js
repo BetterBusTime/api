@@ -10,9 +10,7 @@ const app = express();
 app.use((req, res, next) => {
     res.header(
         "Access-Control-Allow-Origin",
-        process.env.NODE_ENV === "production"
-            ? "http://localhost:3000"
-            : "http://localhost:3000"
+        process.env.NODE_ENV === "production" ? "*" : "http://localhost:3000"
     );
     next();
 });
