@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const users = require("./controllers/users");
 const routes = require("./controllers/routes");
 const stops = require("./controllers/stops");
 
@@ -16,6 +17,7 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use("/users", users);
 app.use("/routes", routes);
 app.use("/stops", stops);
 
