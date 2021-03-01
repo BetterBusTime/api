@@ -4,17 +4,19 @@ const APIHelper = require("./apihelper");
 
 const router = express.Router();
 
-router.get("/:id", (req, res) => {
-    getStop(req.params.id).then(data => res.json(data));
+router.get("/:id", async (req, res) => {
+    try {
+        const data = await getStop(req.params.id);
+        return res.status(200).json(data);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
 });
 
 const getStop = async id => {
-    try {
-        const response = await axios.get(APIHelper.stopURL(id));
-        return response.data.Siri.ServiceDelivery;
-    } catch (error) {
-        console.error(error);
-    }
+    const response = await axios.get(APIHelper.stopURL(id));
+    return response.data.Siri.ServiceDelivery;
 };
 
 module.exports = router;

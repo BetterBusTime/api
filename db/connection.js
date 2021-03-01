@@ -15,8 +15,8 @@ mongoose
         useFindAndModify: false
     })
     .then(instance =>
-        console.log(`connection success: ${instance.connections[0].name}`)
+        console.log(`Success! Connected to DB: ${instance.connections[0].name}`)
     )
-    .catch(error => console.error(`connection failure: ${error}`));
+    .catch(error => console.error(`Failure...: ${error}`));
 
 module.exports = mongoose;

@@ -25,4 +25,4 @@ app.use("/routes", routes);
 app.use("/stops", stops);
 
 const port = process.env.PORT || 4000;
-app.listen(port, () => console.log(`listening on ${port}`));
+app.listen(port, () => console.log(`Express is listening on port ${port}`));
