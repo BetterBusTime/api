@@ -9,12 +9,13 @@ const app = express();
 
 app.use(express.json());
 app.use((req, res, next) => {
-    res.header(
-        "Access-Control-Allow-Origin",
-        process.env.NODE_ENV === "production"
-            ? "https://betterbustime.herokuapp.com"
-            : "http://localhost:3000"
-    );
+    res.set({
+        "Access-Control-Allow-Origin":
+            process.env.NODE_ENV === "production"
+                ? "https://betterbustime.herokuapp.com"
+                : "http://localhost:3000",
+        "Access-Control-Allow-Headers": "Content-Type"
+    });
     next();
 });
 
