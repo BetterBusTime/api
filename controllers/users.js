@@ -10,21 +10,68 @@ const validateUniqueUsername = (req, res, next) => {
     User.countDocuments({ username: req.body.username }, (err, count) => {
         if (err) {
             console.error(err);
-            return res.status(500).json({ data: "Internal server error." });
+            return res.status(500).json({ message: "Internal server error." });
         }
 
         if (count > 0) {
             return res
                 .status(400)
-                .json({ data: "This username already exists." });
+                .json({ message: "This username already exists." });
         }
 
-        next();
+        return next();
     });
 };
 
-router.get("/", (req, res) => {
-    res.json({ data: "GET /users" });
+const decodeToken = token => {
+    try {
+        const verified = jwt.verify(token, process.env.JWT_SIGNING_KEY);
+        return { ...verified, expired: false };
+    } catch (err) {
+        if (err.name === "TokenExpiredError") {
+            // If the token is expired, we have to decode it without verifying
+            const expired = jwt.decode(token);
+            return expired ? { ...expired, expired: true } : false;
+        }
+
+        return false;
+    }
+};
+
+const verifyToken = async (req, res, next) => {
+    // We send a Bearer token in the Authorization header
+    // Authorization: Bearer <token>
+    const auth = req.headers["authorization"];
+    const token = auth && auth.split(" ")[1];
+
+    if (token) {
+        const decoded = decodeToken(token);
+
+        if (decoded) {
+            const user = await User.findById(decoded._id).exec();
+
+            if (user) {
+                if (decoded.expired) {
+                    // If the token has expired, we'll generate a new one
+                    // And send it along with the normal response
+                    // For a seamless user experience
+                    res.set({ "X-Access-Token": generateNewToken(user._id) });
+                }
+
+                return next();
+            }
+
+            return res.status(500).json({ message: "Internal server error." });
+        }
+
+        return res.status(400).json({ message: "Invalid token." });
+    }
+
+    return res.status(400).json({ message: "Invalid authorization." });
+};
+
+router.get("/", verifyToken, (req, res) => {
+    return res.status(200).json({ message: "GET /users" });
 });
 
 router.post("/register", validateUniqueUsername, async (req, res) => {
@@ -35,10 +82,13 @@ router.post("/register", validateUniqueUsername, async (req, res) => {
     user.save((err, newUser) => {
         if (err) {
             console.error(err);
-            return res.status(500).json({ data: "Internal server error." });
+            return res.status(500).json({ message: "Internal server error." });
         }
 
-        res.status(201).json({ data: generateNewToken(newUser.username) });
+        return res
+            .status(201)
+            .set({ "X-Access-Token": generateNewToken(newUser._id) })
+            .json({ message: `${newUser.username} registration successful.` });
     });
 });
 
@@ -46,7 +96,7 @@ router.post("/login", (req, res) => {
     User.findOne({ username: req.body.username }, async (err, user) => {
         if (err) {
             console.error(err);
-            return res.status(500).json({ data: "Internal server error." });
+            return res.status(500).json({ message: "Internal server error." });
         }
 
         if (user) {
@@ -58,23 +108,24 @@ router.post("/login", (req, res) => {
             if (valid) {
                 return res
                     .status(200)
-                    .json({ data: generateNewToken(user.username) });
+                    .set({ "X-Access-Token": generateNewToken(user._id) })
+                    .json({ message: `${user.username} log in successful.` });
             }
 
             return res.status(401).json({
-                data:
+                message:
                     "Invalid username and/or password. Check your credentials and try again."
             });
         }
 
-        res.status(401).json({ data: "This user does not exist." });
+        return res.status(401).json({ message: "This user does not exist." });
     });
 });
 
-// TODO make longer expiration time after testing authentication
-const generateNewToken = username =>
-    jwt.sign({ username: username }, process.env.JWT_SIGNING_KEY, {
-        expiresIn: "300s"
+const generateNewToken = id => {
+    return jwt.sign({ _id: id }, process.env.JWT_SIGNING_KEY, {
+        expiresIn: "14d"
     });
+};
 
 module.exports = router;
