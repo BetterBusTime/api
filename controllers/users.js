@@ -38,7 +38,10 @@ const decodeToken = token => {
     }
 };
 
-const verifyToken = async (req, res, next) => {
+// Verify authentication. If there is a failure, we return a response.
+// Otherwise, since we are looking up a user, return that instead,
+// and the calling function will handle sending the response.
+const verifyToken = async (req, res) => {
     // We send a Bearer token in the Authorization header
     // Authorization: Bearer <token>
     const auth = req.headers["authorization"];
@@ -58,7 +61,7 @@ const verifyToken = async (req, res, next) => {
                     res.set({ "X-Access-Token": generateNewToken(user._id) });
                 }
 
-                return next();
+                return user;
             }
 
             return res.status(500).json({ message: "Internal server error." });
@@ -70,8 +73,11 @@ const verifyToken = async (req, res, next) => {
     return res.status(400).json({ message: "Invalid authorization." });
 };
 
-router.get("/", verifyToken, (req, res) => {
-    return res.status(200).json({ message: "GET /users" });
+router.get("/", async (req, res) => {
+    const user = await verifyToken(req, res);
+    return res
+        .status(200)
+        .json({ routes: user.pinned_routes, stops: user.pinned_stops });
 });
 
 router.post("/register", validateUniqueUsername, async (req, res) => {
@@ -114,6 +120,7 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ message: "This user does not exist." });
 });
 
+// Sign with Mongo's _id param to use for lookups later with decoded tokens
 const generateNewToken = id => {
     return jwt.sign({ _id: id }, process.env.JWT_SIGNING_KEY, {
         expiresIn: "14d"
