@@ -23,6 +23,10 @@ const validateUniqueUsername = (req, res, next) => {
     });
 };
 
+router.get("/", (req, res) => {
+    res.json({ data: "GET /users" });
+});
+
 router.post("/register", validateUniqueUsername, async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(req.body.password, salt);

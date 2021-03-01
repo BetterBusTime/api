@@ -14,7 +14,7 @@ app.use((req, res, next) => {
             process.env.NODE_ENV === "production"
                 ? "https://betterbustime.herokuapp.com"
                 : "http://localhost:3000",
-        "Access-Control-Allow-Headers": "Content-Type"
+        "Access-Control-Allow-Headers": "Authorization, Content-Type"
     });
     next();
 });
