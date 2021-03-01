@@ -92,34 +92,26 @@ router.post("/register", validateUniqueUsername, async (req, res) => {
     });
 });
 
-router.post("/login", (req, res) => {
-    User.findOne({ username: req.body.username }, async (err, user) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Internal server error." });
+router.post("/login", async (req, res) => {
+    const user = await User.findOne({ username: req.body.username }).exec();
+
+    if (user) {
+        const valid = await bcrypt.compare(req.body.password, user.password);
+
+        if (valid) {
+            return res
+                .status(200)
+                .set({ "X-Access-Token": generateNewToken(user._id) })
+                .json({ message: `${user.username} login successful.` });
         }
 
-        if (user) {
-            const valid = await bcrypt.compare(
-                req.body.password,
-                user.password
-            );
+        return res.status(401).json({
+            message:
+                "Invalid username and/or password. Check your credentials and try again."
+        });
+    }
 
-            if (valid) {
-                return res
-                    .status(200)
-                    .set({ "X-Access-Token": generateNewToken(user._id) })
-                    .json({ message: `${user.username} log in successful.` });
-            }
-
-            return res.status(401).json({
-                message:
-                    "Invalid username and/or password. Check your credentials and try again."
-            });
-        }
-
-        return res.status(401).json({ message: "This user does not exist." });
-    });
+    return res.status(401).json({ message: "This user does not exist." });
 });
 
 const generateNewToken = id => {
