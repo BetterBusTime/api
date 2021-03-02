@@ -80,6 +80,18 @@ router.get("/", async (req, res) => {
         .json({ routes: user.pinned_routes, stops: user.pinned_stops });
 });
 
+router.post("/routes", async (req, res) => {
+    const user = await verifyToken(req, res);
+    try {
+        user.pinned_routes.push(req.body);
+        const update = await user.save();
+        return res.status(201).json({ routes: update.pinned_routes });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+});
+
 router.post("/register", validateUniqueUsername, async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(req.body.password, salt);
