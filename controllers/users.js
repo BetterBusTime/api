@@ -96,6 +96,20 @@ router.post("/routes", async (req, res) => {
     }
 });
 
+router.delete("/routes/:id", async (req, res) => {
+    const user = await verifyToken(req, res);
+    try {
+        user.pinned_routes = user.pinned_routes.filter(
+            route => route.id !== req.params.id
+        );
+        const updated = await user.save();
+        return res.status(200).json({ routes: updated.pinned_routes });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+});
+
 router.post("/stops", async (req, res) => {
     const user = await verifyToken(req, res);
     try {

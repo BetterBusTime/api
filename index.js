@@ -15,7 +15,8 @@ app.use((req, res, next) => {
                 ? "https://betterbustime.herokuapp.com"
                 : "http://localhost:3000",
         "Access-Control-Allow-Headers": "Authorization, Content-Type",
-        "Access-Control-Expose-Headers": "X-Access-Token"
+        "Access-Control-Expose-Headers": "X-Access-Token",
+        "Access-Control-Allow-Methods": "GET, POST, DELETE"
     });
     next();
 });
