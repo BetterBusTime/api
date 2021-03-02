@@ -8,9 +8,9 @@ class APIHelper {
     /* END */
 
     /* MTA OneBusAway API (OBA)
-    // http://bustime.mta.info/wiki/Developers/OneBusAwayRESTfulAPI
+    // https://bustime.mta.info/wiki/Developers/OneBusAwayRESTfulAPI
     */
-    static OBA = "http://bustime.mta.info/api/where";
+    static OBA = "https://bustime.mta.info/api/where";
 
     static ROUTES = "/routes-for-agency/";
     static MTABC = "MTABC" + this.JSON;
@@ -21,9 +21,9 @@ class APIHelper {
     /* END */
 
     /* MTA Service Interface for Realtime Information API (SIRI)
-    // http://bustime.mta.info/wiki/Developers/SIRIIntro
+    // https://bustime.mta.info/wiki/Developers/SIRIIntro
     */
-    static SIRI = "http://bustime.mta.info/api/siri/stop-monitoring.json?";
+    static SIRI = "https://bustime.mta.info/api/siri/stop-monitoring.json?";
 
     static OREF = "OperatorRef=MTA";
     static MREF = "MonitoringRef=";
