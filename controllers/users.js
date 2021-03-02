@@ -68,58 +68,77 @@ const verifyToken = async (req, res) => {
                 return user;
             }
 
-            return res.status(500).json({ message: "Internal server error." });
+            return res.status(401).json({ message: "Invalid user." });
         }
 
-        return res.status(400).json({ message: "Invalid token." });
+        return res.status(401).json({ message: "Invalid token." });
     }
 
-    return res.status(400).json({ message: "Invalid authorization." });
+    return res.status(401).json({ message: "Invalid authorization." });
 };
 
 router.get("/", async (req, res) => {
     const user = await verifyToken(req, res);
-    return res
-        .status(200)
-        .json({ routes: user.pinned_routes, stops: user.pinned_stops });
+
+    if (user) {
+        return res
+            .status(200)
+            .json({ routes: user.pinned_routes, stops: user.pinned_stops });
+    }
+
+    return res.status(401).json({ message: "Invalid authorization." });
 });
 
 router.post("/routes", async (req, res) => {
     const user = await verifyToken(req, res);
-    try {
+
+    if (user) {
         user.pinned_routes.push(req.body);
         const updated = await user.save();
         return res.status(201).json({ routes: updated.pinned_routes });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Internal server error." });
     }
+
+    return res.status(401).json({ message: "Invalid authorization." });
 });
 
 router.delete("/routes/:id", async (req, res) => {
     const user = await verifyToken(req, res);
-    try {
+
+    if (user) {
         user.pinned_routes = user.pinned_routes.filter(
             route => route.id !== req.params.id
         );
         const updated = await user.save();
         return res.status(200).json({ routes: updated.pinned_routes });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Internal server error." });
     }
+
+    return res.status(401).json({ message: "Invalid authorization." });
 });
 
 router.post("/stops", async (req, res) => {
     const user = await verifyToken(req, res);
-    try {
+
+    if (user) {
         user.pinned_stops.push(req.body);
         const updated = await user.save();
         return res.status(201).json({ stops: updated.pinned_stops });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Internal server error." });
     }
+
+    return res.status(401).json({ message: "Invalid authorization." });
+});
+
+router.delete("/stops/:id", async (req, res) => {
+    const user = await verifyToken(req, res);
+
+    if (user) {
+        user.pinned_stops = user.pinned_stops.filter(
+            stop => stop.id !== req.params.id
+        );
+        const updated = await user.save();
+        return res.status(200).json({ stops: updated.pinned_stops });
+    }
+
+    return res.status(401).json({ message: "Invalid authorization." });
 });
 
 router.post("/login", async (req, res) => {
