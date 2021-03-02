@@ -92,6 +92,18 @@ router.post("/routes", async (req, res) => {
     }
 });
 
+router.post("/stops", async (req, res) => {
+    const user = await verifyToken(req, res);
+    try {
+        user.pinned_stops.push(req.body);
+        const update = await user.save();
+        return res.status(201).json({ stops: update.pinned_stops });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+});
+
 router.post("/register", validateUniqueUsername, async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(req.body.password, salt);
