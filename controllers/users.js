@@ -5,22 +5,26 @@ const User = require("../db/user");
 
 const router = express.Router();
 
-// check if user already exists
-const validateUniqueUsername = (req, res, next) => {
-    User.countDocuments({ username: req.body.username }, (err, count) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Internal server error." });
-        }
-
-        if (count > 0) {
-            return res
-                .status(400)
-                .json({ message: "This username already exists." });
-        }
-
-        return next();
+// Sign with Mongo's _id param to use for lookups later with decoded tokens
+const generateNewToken = id => {
+    return jwt.sign({ _id: id }, process.env.JWT_SIGNING_KEY, {
+        expiresIn: "14d"
     });
+};
+
+// check if this username already exists
+const validateUniqueUsername = async (req, res, next) => {
+    const count = await User.countDocuments({ username: req.body.username });
+
+    if (count === 0) return next();
+
+    if (count > 0) {
+        return res
+            .status(400)
+            .json({ message: "This username already exists." });
+    }
+
+    return res.status(500).json({ message: "Internal server error." });
 };
 
 const decodeToken = token => {
@@ -84,8 +88,8 @@ router.post("/routes", async (req, res) => {
     const user = await verifyToken(req, res);
     try {
         user.pinned_routes.push(req.body);
-        const update = await user.save();
-        return res.status(201).json({ routes: update.pinned_routes });
+        const updated = await user.save();
+        return res.status(201).json({ routes: updated.pinned_routes });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Internal server error." });
@@ -96,30 +100,12 @@ router.post("/stops", async (req, res) => {
     const user = await verifyToken(req, res);
     try {
         user.pinned_stops.push(req.body);
-        const update = await user.save();
-        return res.status(201).json({ stops: update.pinned_stops });
+        const updated = await user.save();
+        return res.status(201).json({ stops: updated.pinned_stops });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Internal server error." });
     }
-});
-
-router.post("/register", validateUniqueUsername, async (req, res) => {
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(req.body.password, salt);
-    const user = new User({ username: req.body.username, password: hash });
-
-    user.save((err, newUser) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Internal server error." });
-        }
-
-        return res
-            .status(201)
-            .set({ "X-Access-Token": generateNewToken(newUser._id) })
-            .json({ message: `${newUser.username} registration successful.` });
-    });
 });
 
 router.post("/login", async (req, res) => {
@@ -144,11 +130,21 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ message: "This user does not exist." });
 });
 
-// Sign with Mongo's _id param to use for lookups later with decoded tokens
-const generateNewToken = id => {
-    return jwt.sign({ _id: id }, process.env.JWT_SIGNING_KEY, {
-        expiresIn: "14d"
-    });
-};
+router.post("/register", validateUniqueUsername, async (req, res) => {
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(req.body.password, salt);
+    const user = new User({ username: req.body.username, password: hash });
+
+    const saved = await user.save();
+
+    if (saved) {
+        return res
+            .status(201)
+            .set({ "X-Access-Token": generateNewToken(saved._id) })
+            .json({ message: `${saved.username} registration successful.` });
+    }
+
+    return res.status(500).json({ message: "Internal server error." });
+});
 
 module.exports = router;
