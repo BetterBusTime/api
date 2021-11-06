@@ -8,7 +8,7 @@ const stops = require("./controllers/stops");
 const app = express();
 
 app.use(express.json());
-app.use((req, res, next) => {
+app.use((_, res, next) => {
     res.set({
         "Access-Control-Allow-Origin":
             process.env.NODE_ENV === "production"
